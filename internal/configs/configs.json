@@ -1,0 +1,14 @@
+{
+  "log_params": {
+    "LogDirectory": "./logs",
+    "LogInfo": "info.log",
+    "LogError": "error.log",
+    "LogWarn": "warn.log",
+    "LogDebug": "debug.log",
+    "MaxSizeMegabytes": 5,
+    "MaxBackups": 3,
+    "MaxAgeDays": 10,
+    "Compress": false,
+    "LocalTime": true
+  }
+}

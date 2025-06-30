@@ -1,0 +1,875 @@
+basePath: /
+definitions:
+  models.Bus:
+    properties:
+      driver_id:
+        type: integer
+      mechanic_id:
+        type: integer
+      model1:
+        type: string
+      number:
+        type: string
+      status:
+        description: в рейсе, в ремонте, свободен
+        type: string
+      year:
+        type: integer
+    type: object
+  models.BusShortInfo:
+    properties:
+      model1:
+        type: string
+      number:
+        type: string
+      status:
+        type: string
+    type: object
+  models.MyScheduleResponse:
+    properties:
+      bus:
+        $ref: '#/definitions/models.BusShortInfo'
+      id:
+        type: integer
+      line_name:
+        type: string
+      time_range:
+        type: string
+    type: object
+  models.Report:
+    properties:
+      bus:
+        $ref: '#/definitions/models.Bus'
+      bus_id:
+        type: integer
+      comment:
+        type: string
+      mechanic:
+        $ref: '#/definitions/models.User'
+      mechanic_id:
+        type: integer
+      status:
+        type: string
+    type: object
+  models.User:
+    properties:
+      email:
+        type: string
+      full_name:
+        type: string
+      phone:
+        type: string
+      role:
+        description: director, driver, mechanic
+        type: string
+    type: object
+  models.WorkSchedule:
+    properties:
+      Bus:
+        $ref: '#/definitions/models.Bus'
+      Driver:
+        $ref: '#/definitions/models.User'
+      bus_id:
+        type: integer
+      driver_id:
+        type: integer
+      line_name:
+        type: string
+      time_range:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact:
+    email: bus_depot@example.com
+    name: Поддержка
+  description: API для управления автобусным парком
+  title: Bus Depot API
+  version: "1.0"
+paths:
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Аутентификация пользователя и получение JWT токена
+      parameters:
+      - description: Данные пользователя для входа (email и пароль)
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/models.User'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Вход пользователя
+      tags:
+      - auth
+  /auth/register:
+    post:
+      consumes:
+      - application/json
+      description: Создает нового пользователя с указанными данными
+      parameters:
+      - description: Данные пользователя для регистрации
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/models.User'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.User'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Регистрация нового пользователя
+      tags:
+      - auth
+  /buses:
+    get:
+      description: Возвращает массив всех автобусов
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Bus'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Получить список всех автобусов
+      tags:
+      - buses
+    post:
+      consumes:
+      - application/json
+      description: Добавляет новый автобус в систему
+      parameters:
+      - description: Данные автобуса
+        in: body
+        name: bus
+        required: true
+        schema:
+          $ref: '#/definitions/models.Bus'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.Bus'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Создать новый автобус
+      tags:
+      - buses
+  /buses/{id}:
+    delete:
+      description: Удаляет автобус по ID
+      parameters:
+      - description: ID автобуса
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Удалить автобус
+      tags:
+      - buses
+    get:
+      description: Возвращает автобус по уникальному идентификатору
+      parameters:
+      - description: ID автобуса
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Bus'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Получить автобус по ID
+      tags:
+      - buses
+    put:
+      consumes:
+      - application/json
+      description: Обновляет информацию об автобусе по ID
+      parameters:
+      - description: ID автобуса
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Обновленные данные автобуса
+        in: body
+        name: bus
+        required: true
+        schema:
+          $ref: '#/definitions/models.Bus'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Bus'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Обновить данные автобуса
+      tags:
+      - buses
+  /buses/{id}/assign-driver:
+    post:
+      consumes:
+      - application/json
+      description: Назначает водителя указанному автобусу
+      parameters:
+      - description: ID автобуса
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: ID водителя
+        in: body
+        name: driverId
+        required: true
+        schema:
+          type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Назначить водителя автобусу
+      tags:
+      - buses
+  /buses/{id}/assign-mechanic:
+    post:
+      consumes:
+      - application/json
+      description: Назначает механика указанному автобусу
+      parameters:
+      - description: ID автобуса
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: ID механика
+        in: body
+        name: mechanicId
+        required: true
+        schema:
+          type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Назначить механика автобусу
+      tags:
+      - buses
+  /reports:
+    get:
+      description: Возвращает список всех отчетов
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Report'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Получить все отчеты
+      tags:
+      - reports
+    post:
+      consumes:
+      - application/json
+      description: Создает новый отчет, связывая его с текущим механиком (из контекста)
+      parameters:
+      - description: Данные отчета
+        in: body
+        name: report
+        required: true
+        schema:
+          $ref: '#/definitions/models.Report'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Создать новый отчет
+      tags:
+      - reports
+  /reports/{id}:
+    delete:
+      description: Удаляет отчет по ID
+      parameters:
+      - description: ID отчета
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Удалить отчет
+      tags:
+      - reports
+    get:
+      description: Возвращает отчет по уникальному идентификатору
+      parameters:
+      - description: ID отчета
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Report'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Получить отчет по ID
+      tags:
+      - reports
+  /schedules:
+    get:
+      description: Возвращает список всех графиков работы
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.WorkSchedule'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Получить все графики работы
+      tags:
+      - workschedules
+    post:
+      consumes:
+      - application/json
+      description: Добавляет новый график работы
+      parameters:
+      - description: Данные графика работы
+        in: body
+        name: schedule
+        required: true
+        schema:
+          $ref: '#/definitions/models.WorkSchedule'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Создать график работы
+      tags:
+      - workschedules
+  /schedules/{id}:
+    delete:
+      description: Удаляет график работы по ID
+      parameters:
+      - description: ID графика работы
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Удалить график работы
+      tags:
+      - workschedules
+    get:
+      description: Возвращает график работы по уникальному идентификатору
+      parameters:
+      - description: ID графика работы
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.WorkSchedule'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Получить график работы по ID
+      tags:
+      - workschedules
+    put:
+      consumes:
+      - application/json
+      description: Обновляет график работы по ID
+      parameters:
+      - description: ID графика работы
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Обновленные данные графика работы
+        in: body
+        name: schedule
+        required: true
+        schema:
+          $ref: '#/definitions/models.WorkSchedule'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Обновить график работы
+      tags:
+      - workschedules
+  /schedules/my:
+    get:
+      description: Возвращает график работы для текущего авторизованного водителя
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.MyScheduleResponse'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Получить мой график работы
+      tags:
+      - workschedules
+  /users:
+    get:
+      description: Возвращает список всех пользователей
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.User'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Получить всех пользователей
+      tags:
+      - users
+    post:
+      consumes:
+      - application/json
+      description: Добавляет нового пользователя в систему
+      parameters:
+      - description: Данные пользователя
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/models.User'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.User'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Создать нового пользователя
+      tags:
+      - users
+  /users/{id}:
+    delete:
+      description: Удаляет пользователя по ID
+      parameters:
+      - description: ID пользователя
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Удалить пользователя
+      tags:
+      - users
+    get:
+      description: Возвращает пользователя по уникальному идентификатору
+      parameters:
+      - description: ID пользователя
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.User'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Получить пользователя по ID
+      tags:
+      - users
+    put:
+      consumes:
+      - application/json
+      description: Обновляет данные пользователя по ID
+      parameters:
+      - description: ID пользователя
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Обновленные данные пользователя
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/models.User'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.User'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Обновить пользователя
+      tags:
+      - users
+schemes:
+- http
+swagger: "2.0"
