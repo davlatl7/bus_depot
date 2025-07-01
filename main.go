@@ -27,7 +27,7 @@ import (
 )
 
 func main() {
-	// ✅ Конфигурации
+	// Конфигурации
 	if err := configs.ReadSettings(); err != nil {
 		panic("Ошибка загрузки конфигурации: " + err.Error())
 	}
@@ -35,19 +35,19 @@ func main() {
 		panic("Ошибка инициализации логгера: " + err.Error())
 	}
 
-	// ✅ БД
+	//БД
 	dbConn, err := db.InitDB()
 	if err != nil {
 		logger.Error.Fatalf("Ошибка инициализации БД: %v", err)
 	}
 
-	// ✅ Миграции
+	//Миграции
 	if err := migrations.InitMigrations(dbConn); err != nil {
 		logger.Error.Fatalf("Ошибка миграции: %v", err)
 	}
 	logger.Info.Println("Миграции завершены")
 
-	// ✅ Репозитории и сервисы
+	// Pепозитории и сервисы
 	busRepo := repository.NewBusRepository(dbConn)
 	userRepo := repository.NewUserRepository(dbConn)
 	workScheduleRepo := repository.NewWorkScheduleRepository(dbConn)
@@ -58,14 +58,14 @@ func main() {
 	reportService := service.NewReportService(reportRepo)
 	authService := service.NewAuthService()
 
-	// ✅ Хендлеры
+	//Хендлеры
 	busHandler := handlers.NewBusHandler(busService)
 	userHandler := handlers.NewUserHandler(userService)
 	authHandler := handlers.NewAuthHandler(authService, userService)
 	workScheduleHandler := handlers.NewWorkScheduleHandler(workScheduleService)
 	reportHandler := handlers.NewReportHandler(reportService)
 
-	// ✅ Роутер
+	//Роутер
 	router := gin.Default()
 
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
@@ -73,13 +73,13 @@ func main() {
 
 
 
-	// ✅ Роуты
+	//Роуты
 	handlers.InitRoutes(router, authHandler, userHandler, busHandler, workScheduleHandler, reportHandler)
 
-	// ✅ Запуск сервера
+	//Запуск сервера
 	port := "8080"
-	logger.Info.Printf("🚀 Сервер запущен на порту %s", port)
+	logger.Info.Printf("Cервер запущен на порту %s", port)
 	if err := router.Run(":" + port); err != nil {
-		logger.Error.Fatalf("❌ Ошибка запуска сервера: %v", err)
+		logger.Error.Fatalf("Ошибка запуска сервера: %v", err)
 	}
 }
