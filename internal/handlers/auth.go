@@ -35,7 +35,7 @@ func (h *AuthHandler) Register(c *gin.Context) {
 	}
 
 	if err := h.userService.CreateUser(&user); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Ошибка при создании пользователя"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Ошибка при создании пользователя (пользователь уже существует)"})
 		return
 	}
 
