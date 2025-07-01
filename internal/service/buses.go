@@ -3,10 +3,12 @@ package service
 import (
 	"bus_depot/internal/models"
 	"bus_depot/internal/repository"
+	"fmt"
 )
 
 type BusService struct {
 	repo *repository.BusRepository
+	userRepo  *repository.UserRepository
 }
 
 func NewBusService(repo *repository.BusRepository) *BusService {
@@ -34,28 +36,40 @@ func (s *BusService) DeleteBus(id int) error {
 }
 
 func (s *BusService) AssignDriver(busID, driverID uint) error {
-	bus, err := s.repo.GetByID(int(busID))
+	exists, err := s.userRepo.ExistsByID(driverID)
 	if err != nil {
-		return err
+		return fmt.Errorf("ошибка при проверке водителя: %v", err)
+	}
+	if !exists {
+		return fmt.Errorf("водитель с ID %d не найден", driverID)
 	}
 
-	bus.DriverID = &driverID
-	return s.repo.Update(bus)
+	
+	existingBus, err := s.repo.GetByDriverID(driverID)
+	if err == nil && existingBus != nil {
+		return fmt.Errorf("водитель уже назначен на автобус с ID %d", existingBus.ID)
+	}
+
+	return s.repo.AssignDriver(busID, driverID)
 }
+
 
 func (s *BusService) AssignMechanic(busID, mechanicID uint) error {
-	bus, err := s.repo.GetByID(int(busID))
+	// Проверка: механик существует?
+	exists, err := s.userRepo.ExistsByID(mechanicID)
 	if err != nil {
-		return err
+		return fmt.Errorf("ошибка при проверке механика: %v", err)
+	}
+	if !exists {
+		return fmt.Errorf("механик с ID %d не найден", mechanicID)
 	}
 
-	bus.MechanicID = &mechanicID
-	return s.repo.Update(bus)
+	
+	existingBus, err := s.repo.GetByMechanicID(mechanicID)
+	if err == nil && existingBus != nil {
+		return fmt.Errorf("механик уже назначен на автобус с ID %d", existingBus.ID)
+	}
+
+	return s.repo.AssignMaster(busID, mechanicID)
 }
-
-
-
-
-
-
 

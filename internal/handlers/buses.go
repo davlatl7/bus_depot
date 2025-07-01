@@ -165,7 +165,7 @@ func (h *BusHandler) DeleteBus(c *gin.Context) {
 // @Router       /buses/{id}/assign-driver [post]
 func (h *BusHandler) AssignDriver(c *gin.Context) {
 	var input struct {
-		DriverID uint `json:"driverId"`
+		DriverID uint `json:"driver_id"`
 	}
 	busIDParam := c.Param("id")
 
@@ -210,7 +210,7 @@ func (h *BusHandler) AssignMechanic(c *gin.Context) {
 	}
 
 	var input struct {
-		MechanicID uint `json:"mechanicId"`
+		MechanicID uint `json:"mechanic_id"`
 	}
 
 	if err := c.ShouldBindJSON(&input); err != nil {
@@ -220,9 +220,9 @@ func (h *BusHandler) AssignMechanic(c *gin.Context) {
 
 	err = h.service.AssignMechanic(uint(busID), input.MechanicID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to assign mechanic"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Не удалось назначить механика"})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Mechanic assigned to bus"})
+	c.JSON(http.StatusOK, gin.H{"message": "Механик успешно назначен"})
 }

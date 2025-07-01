@@ -50,10 +50,27 @@ func (r *BusRepository) AssignDriver(busID uint, driverID uint) error {
 func (r *BusRepository) AssignMaster(busID uint, masterID uint) error {
 	return r.db.Model(&models.Bus{}).
 		Where("id = ?", busID).
-		Update("master_id", masterID).Error
+		Update("mechanic_id", masterID).Error
 }
 
+
+func (r *UserRepository) ExistsByID(id uint) (bool, error) {
+	var count int64
+	err := r.db.Model(&models.User{}).Where("id = ?", id).Count(&count).Error
+	return count > 0, err
+}
+
+
+
 func (r *BusRepository) GetByDriverID(driverID uint) (*models.Bus, error) {
+	var bus models.Bus
+	if err := r.db.Where("driver_id = ?", driverID).First(&bus).Error; err != nil {
+		return nil, err
+	}
+	return &bus, nil
+}
+
+func (r *BusRepository) GetByMechanicID(driverID uint) (*models.Bus, error) {
 	var bus models.Bus
 	if err := r.db.Where("driver_id = ?", driverID).First(&bus).Error; err != nil {
 		return nil, err
