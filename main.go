@@ -52,7 +52,7 @@ func main() {
 	userRepo := repository.NewUserRepository(dbConn)
 	workScheduleRepo := repository.NewWorkScheduleRepository(dbConn)
 	reportRepo := repository.NewReportRepository(dbConn)
-	busService := service.NewBusService(busRepo)
+	busService := service.NewBusService(busRepo, userRepo)
 	userService := service.NewUserService(userRepo)
 	workScheduleService := service.NewWorkScheduleService(workScheduleRepo)
 	reportService := service.NewReportService(reportRepo)

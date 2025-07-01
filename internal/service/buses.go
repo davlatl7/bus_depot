@@ -11,8 +11,11 @@ type BusService struct {
 	userRepo  *repository.UserRepository
 }
 
-func NewBusService(repo *repository.BusRepository) *BusService {
-	return &BusService{repo: repo}
+func NewBusService(repo *repository.BusRepository,  userRepo *repository.UserRepository) *BusService {
+	 return &BusService{
+        repo:     repo,
+        userRepo: userRepo,
+    }
 }
 
 func (s *BusService) CreateBus(bus *models.Bus) error {
